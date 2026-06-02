@@ -13,7 +13,6 @@ import Dashboard from "@/pages/Dashboard";
 import Queries from "@/pages/Queries";
 import QueryDetail from "@/pages/QueryDetail";
 import NewQuery from "@/pages/NewQuery";
-import Documents from "@/pages/Documents";
 import Contact from "@/pages/Contact";
 import AdminUsers from "@/pages/AdminUsers";
 import Profile from "@/pages/Profile";
@@ -196,7 +195,6 @@ function ClerkProviderWithRoutes() {
           <ProtectedRoute path="/queries" component={Queries} />
           <ProtectedRoute path="/queries/new" component={NewQuery} />
           <ProtectedRoute path="/queries/:id" component={QueryDetail} />
-          <ProtectedRoute path="/documents" component={Documents} />
           <ProtectedRoute path="/contact" component={Contact} />
           <ProtectedRoute path="/admin/users" component={AdminUsers} />
           <ProtectedRoute path="/profile" component={Profile} />

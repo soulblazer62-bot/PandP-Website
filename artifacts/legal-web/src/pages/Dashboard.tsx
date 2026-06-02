@@ -125,15 +125,6 @@ export default function Dashboard() {
                     <p className="text-3xl font-bold">{stats?.totalClients ?? 0}</p>
                   </CardContent>
                 </Card>
-                <Card data-testid="stat-documents">
-                  <CardHeader className="pb-2 flex flex-row items-center justify-between">
-                    <CardTitle className="text-sm font-medium text-muted-foreground">Documents</CardTitle>
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-3xl font-bold">{stats?.totalDocuments ?? 0}</p>
-                  </CardContent>
-                </Card>
               </>
             )}
           </div>

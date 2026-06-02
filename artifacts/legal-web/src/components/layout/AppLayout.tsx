@@ -15,7 +15,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { label: "Legal Queries", path: "/queries", icon: <FileSearch className="h-4 w-4" /> },
-    { label: "Documents", path: "/documents", icon: <FileText className="h-4 w-4" /> },
     ...(isAdmin ? [{ label: "Client Directory", path: "/admin/users", icon: <Users className="h-4 w-4" /> }] : []),
     { label: "Contact Firm", path: "/contact", icon: <Phone className="h-4 w-4" /> },
     { label: "My Profile", path: "/profile", icon: <User className="h-4 w-4" /> },
