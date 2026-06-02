@@ -77,7 +77,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="md:hidden h-16 border-b border-border bg-card flex items-center px-4 justify-between">
            <Link href="/dashboard" className="flex items-center gap-2">
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-6 w-6" />
-            <span className="font-serif font-bold tracking-tight">Lexon & Associates</span>
+            <span className="font-serif font-bold tracking-tight">P and P Associates</span>
           </Link>
            <Button variant="ghost" size="icon" onClick={() => signOut()}>
             <LogOut className="h-5 w-5" />
