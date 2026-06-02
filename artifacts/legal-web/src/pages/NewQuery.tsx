@@ -1,5 +1,5 @@
 import { AppLayout } from "@/components/layout/AppLayout";
-import { useGetMyProfile, useCreateQuery, getListQueriesQueryKey } from "@workspace/api-client-react";
+import { useGetMyProfile, useCreateQuery, getListQueriesQueryKey, getGetDashboardStatsQueryKey, getGetQueriesByCategoryQueryKey } from "@workspace/api-client-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +51,8 @@ export default function NewQuery() {
       {
         onSuccess: (created) => {
           queryClient.invalidateQueries({ queryKey: getListQueriesQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetDashboardStatsQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetQueriesByCategoryQueryKey() });
           toast({ title: "Your query has been submitted. We'll respond shortly." });
           setLocation(`/queries/${created.id}`);
         },
