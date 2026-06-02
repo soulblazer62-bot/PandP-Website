@@ -8,7 +8,7 @@ export default function Home() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-8 w-8" />
-            <span className="font-serif text-xl font-bold tracking-tight">Lexon & Associates</span>
+            <span className="font-serif text-xl font-bold tracking-tight">P and P Associates</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/sign-in">

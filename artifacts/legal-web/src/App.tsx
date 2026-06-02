@@ -172,13 +172,13 @@ function ClerkProviderWithRoutes() {
         signIn: {
           start: {
             title: "Client Portal",
-            subtitle: "Sign in to access Lexon & Associates",
+            subtitle: "Sign in to access P and P Associates",
           },
         },
         signUp: {
           start: {
             title: "Create Account",
-            subtitle: "Register for Lexon & Associates Client Portal",
+            subtitle: "Register for P and P Associates Client Portal",
           },
         },
       }}

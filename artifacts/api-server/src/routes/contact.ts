@@ -4,7 +4,7 @@ const router = Router();
 
 router.get("/", (_req, res) => {
   return res.json({
-    firmName: "Lexon & Associates Law Firm",
+    firmName: "P and P Associates Law Firm",
     address: "1247 Justice Avenue, Suite 400",
     city: "New York",
     state: "NY",

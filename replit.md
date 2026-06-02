@@ -1,4 +1,4 @@
-# Lexon & Associates Law Firm
+# P and P Associates Law Firm
 
 A full-stack legal services platform where clients submit legal queries and admins manage everything — built with role-based access (client vs admin), Clerk authentication, and a PostgreSQL backend.
 

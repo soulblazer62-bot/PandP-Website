@@ -28,7 +28,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center px-6 border-b border-border bg-sidebar text-sidebar-foreground">
           <Link href="/dashboard" className="flex items-center gap-2">
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="Logo" className="h-6 w-6" />
-            <span className="font-serif font-bold tracking-tight text-lg">Lexon & Associates</span>
+            <span className="font-serif font-bold tracking-tight text-lg">P and P Associates</span>
           </Link>
         </div>
         
