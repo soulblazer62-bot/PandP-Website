@@ -10,7 +10,7 @@ router.get("/", (_req, res) => {
     state: "NY",
     zip: "10001",
     phone: "+1 (212) 555-0147",
-    email: "info@lexonassociates.com",
+    email: "info@pandpassociates.com",
     hours: "Monday–Friday: 9:00 AM – 6:00 PM | Saturday: 10:00 AM – 2:00 PM",
     mapEmbedUrl: null,
   });
