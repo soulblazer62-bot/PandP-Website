@@ -1,26 +1,13 @@
 import { AppLayout } from "@/components/layout/AppLayout";
 import { useGetMyProfile, useCreateQuery, getListQueriesQueryKey } from "@workspace/api-client-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
+import { useLocation, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
-import { Redirect } from "wouter";
-
-const formSchema = z.object({
-  subject: z.string().min(3, "Subject must be at least 3 characters"),
-  description: z.string().min(10, "Please describe your query in at least 10 characters"),
-  category: z.enum(["family_law", "criminal_law", "corporate_law", "property_law", "employment_law", "immigration_law", "other"]),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { ArrowLeft, Send } from "lucide-react";
 
 const CATEGORIES = [
   { value: "family_law", label: "Family Law" },
@@ -29,7 +16,7 @@ const CATEGORIES = [
   { value: "property_law", label: "Property Law" },
   { value: "employment_law", label: "Employment Law" },
   { value: "immigration_law", label: "Immigration Law" },
-  { value: "other", label: "Other" },
+  { value: "other", label: "Other / Not Sure" },
 ];
 
 export default function NewQuery() {
@@ -39,23 +26,32 @@ export default function NewQuery() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { subject: "", description: "", category: "other" },
-  });
+  const [queryText, setQueryText] = useState("");
+  const [category, setCategory] = useState("other");
 
-  // Admins should not submit queries
   if (!profileLoading && profile?.role === "admin") {
     return <Redirect to="/queries" />;
   }
 
-  function onSubmit(values: FormValues) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = queryText.trim();
+    if (!trimmed) return;
+
+    const firstLine = trimmed.split("\n")[0].slice(0, 80);
+
     createQuery.mutate(
-      { data: values },
+      {
+        data: {
+          subject: firstLine,
+          description: trimmed,
+          category: category as "family_law" | "criminal_law" | "corporate_law" | "property_law" | "employment_law" | "immigration_law" | "other",
+        },
+      },
       {
         onSuccess: (created) => {
           queryClient.invalidateQueries({ queryKey: getListQueriesQueryKey() });
-          toast({ title: "Query submitted successfully" });
+          toast({ title: "Your query has been submitted. We'll respond shortly." });
           setLocation(`/queries/${created.id}`);
         },
         onError: () => toast({ title: "Failed to submit query", variant: "destructive" }),
@@ -63,9 +59,12 @@ export default function NewQuery() {
     );
   }
 
+  const charCount = queryText.length;
+  const isReady = queryText.trim().length >= 10;
+
   return (
     <AppLayout>
-      <div className="max-w-xl space-y-6">
+      <div className="max-w-2xl space-y-6">
         <button
           data-testid="button-back"
           onClick={() => setLocation("/queries")}
@@ -76,72 +75,64 @@ export default function NewQuery() {
         </button>
 
         <div>
-          <h1 className="text-2xl font-serif font-bold">Submit a Legal Query</h1>
-          <p className="text-muted-foreground text-sm mt-1">Describe your legal matter and our team will review it.</p>
+          <h1 className="text-2xl font-serif font-bold">Ask a Legal Query</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Describe your legal matter below. Our team at P and P Associates will review and respond.
+          </p>
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Practice Area</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CATEGORIES.map(c => (
-                          <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="subject"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subject</FormLabel>
-                    <FormControl>
-                      <Input data-testid="input-subject" placeholder="Brief subject of your query" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        data-testid="input-description"
-                        placeholder="Explain your legal matter in detail. Include relevant dates, parties involved, and any documents you have..."
-                        rows={6}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button data-testid="button-submit-query" type="submit" className="w-full" disabled={createQuery.isPending}>
-                {createQuery.isPending ? "Submitting..." : "Submit Query"}
-              </Button>
-            </form>
-          </Form>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Category selector */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">What area of law does this relate to?</label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger data-testid="select-category" className="w-full sm:w-72">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Main query textarea */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium">Describe your query in detail</label>
+            <Textarea
+              data-testid="input-query"
+              placeholder="e.g. I am facing an issue with my landlord who has refused to return my security deposit even after 6 months of vacating the property. I have all rent receipts and the original agreement. What legal steps can I take?
+
+Please include as much detail as possible — relevant dates, documents you have, parties involved, and what outcome you're looking for."
+              rows={10}
+              value={queryText}
+              onChange={e => setQueryText(e.target.value)}
+              className="resize-none text-sm leading-relaxed"
+            />
+            <p className="text-xs text-muted-foreground text-right">{charCount} characters{charCount < 10 && charCount > 0 ? " (min 10)" : ""}</p>
+          </div>
+
+          <Button
+            data-testid="button-submit-query"
+            type="submit"
+            className="w-full"
+            disabled={!isReady || createQuery.isPending}
+          >
+            {createQuery.isPending ? (
+              "Submitting..."
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Submit Query to P and P Associates
+              </>
+            )}
+          </Button>
+        </form>
+
+        <p className="text-xs text-muted-foreground text-center">
+          All queries are treated with strict confidentiality. You will be notified once our team has reviewed your matter.
+        </p>
       </div>
     </AppLayout>
   );

@@ -5,13 +5,14 @@ const router = Router();
 router.get("/", (_req, res) => {
   return res.json({
     firmName: "P and P Associates Law Firm",
-    address: "1247 Justice Avenue, Suite 400",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    phone: "+1 (212) 555-0147",
-    email: "info@pandpassociates.com",
-    hours: "Monday–Friday: 9:00 AM – 6:00 PM | Saturday: 10:00 AM – 2:00 PM",
+    address: "Chamber No. 12, Patiala House Courts Complex",
+    city: "New Delhi",
+    state: "Delhi",
+    zip: "110001",
+    phone: "9210890993",
+    phone2: "9210696173",
+    email: "info@pandpassociates.in",
+    hours: "Monday–Saturday: 10:00 AM – 6:00 PM | Sunday: Closed",
     mapEmbedUrl: null,
   });
 });

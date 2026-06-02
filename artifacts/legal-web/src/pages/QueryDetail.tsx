@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -40,21 +40,24 @@ export default function QueryDetail() {
   const queryId = parseInt(id ?? "0", 10);
   const [, setLocation] = useLocation();
   const { data: profile } = useGetMyProfile();
-  const { data: query, isLoading } = useGetQuery(queryId, { query: { enabled: !!queryId, queryKey: getGetQueryQueryKey(queryId) } });
+  const { data: query, isLoading } = useGetQuery(queryId, {
+    query: { enabled: !!queryId, queryKey: getGetQueryQueryKey(queryId) },
+  });
   const updateQuery = useUpdateQuery();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const isAdmin = profile?.role === "admin";
 
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<string>("pending");
   const [adminNotes, setAdminNotes] = useState<string>("");
-  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  function startEdit() {
-    setStatus(query?.status ?? "pending");
-    setAdminNotes(query?.adminNotes ?? "");
-    setEditing(true);
-  }
+  useEffect(() => {
+    if (query) {
+      setStatus(query.status ?? "pending");
+      setAdminNotes(query.adminNotes ?? "");
+    }
+  }, [query]);
 
   function handleSave() {
     updateQuery.mutate(
@@ -63,17 +66,18 @@ export default function QueryDetail() {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getGetQueryQueryKey(queryId) });
           queryClient.invalidateQueries({ queryKey: getListQueriesQueryKey() });
-          toast({ title: "Query updated" });
-          setEditing(false);
+          toast({ title: "Response saved and sent to client." });
+          setSaved(true);
+          setTimeout(() => setSaved(false), 3000);
         },
-        onError: () => toast({ title: "Failed to update", variant: "destructive" }),
+        onError: () => toast({ title: "Failed to save", variant: "destructive" }),
       }
     );
   }
 
   return (
     <AppLayout>
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-2xl space-y-5">
         <button
           data-testid="button-back"
           onClick={() => setLocation("/queries")}
@@ -93,6 +97,7 @@ export default function QueryDetail() {
           <p className="text-muted-foreground">Query not found.</p>
         ) : (
           <>
+            {/* Query Details Card */}
             <div className="bg-card border border-border rounded-lg p-6 space-y-4">
               <div className="flex items-start justify-between gap-4">
                 <h1 className="text-xl font-serif font-bold leading-snug">{query.subject}</h1>
@@ -101,7 +106,7 @@ export default function QueryDetail() {
                 </Badge>
               </div>
 
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
                 <span>Category: <strong className="text-foreground">{CATEGORY_LABELS[query.category] ?? query.category}</strong></span>
                 <span>Submitted: <strong className="text-foreground">{new Date(query.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</strong></span>
                 {isAdmin && query.clientName && (
@@ -112,44 +117,39 @@ export default function QueryDetail() {
                 )}
               </div>
 
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Description</p>
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Client's Query</p>
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{query.description}</p>
               </div>
-
-              {/* Admin Notes — visible to both, editable only by admin */}
-              {(query.adminNotes || isAdmin) && (
-                <div className="border-t border-border pt-4">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
-                    {isAdmin ? "Case Notes (admin)" : "Response from P and P Associates"}
-                  </p>
-                  {isAdmin && editing ? (
-                    <Textarea
-                      data-testid="input-admin-notes"
-                      value={adminNotes}
-                      onChange={e => setAdminNotes(e.target.value)}
-                      placeholder="Add case notes visible to the client..."
-                      rows={4}
-                    />
-                  ) : (
-                    <p className="text-sm leading-relaxed text-blue-800 bg-blue-50 rounded p-3 italic">
-                      {query.adminNotes || <span className="text-muted-foreground not-italic">No notes added yet.</span>}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
 
-            {/* Admin Controls Only */}
-            {isAdmin && (
-              <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Admin Controls</h2>
-                {editing ? (
-                  <>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Update Status</label>
+            {/* Response section — visible to both */}
+            <div className="bg-card border border-border rounded-lg p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  {isAdmin ? "Your Response to Client" : "Response from P and P Associates"}
+                </h2>
+                {!isAdmin && query.status === "pending" && (
+                  <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800 border-yellow-200">Awaiting response</Badge>
+                )}
+              </div>
+
+              {isAdmin ? (
+                /* Admin: always-visible editable response */
+                <div className="space-y-4">
+                  <Textarea
+                    data-testid="input-admin-notes"
+                    value={adminNotes}
+                    onChange={e => setAdminNotes(e.target.value)}
+                    placeholder="Type your legal response here. This will be visible to the client once saved..."
+                    rows={6}
+                    className="text-sm leading-relaxed"
+                  />
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1 flex-1">
+                      <label className="text-xs font-medium text-muted-foreground">Update Status</label>
                       <Select value={status} onValueChange={setStatus}>
-                        <SelectTrigger data-testid="select-status">
+                        <SelectTrigger data-testid="select-status" className="w-48">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -160,20 +160,38 @@ export default function QueryDetail() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-3">
-                      <Button data-testid="button-save-query" onClick={handleSave} disabled={updateQuery.isPending}>
-                        {updateQuery.isPending ? "Saving..." : "Save Changes"}
-                      </Button>
-                      <Button variant="outline" onClick={() => setEditing(false)}>Cancel</Button>
-                    </div>
-                  </>
+                    <Button
+                      data-testid="button-save-response"
+                      onClick={handleSave}
+                      disabled={updateQuery.isPending}
+                      className="self-end"
+                    >
+                      {updateQuery.isPending ? (
+                        "Saving..."
+                      ) : saved ? (
+                        "Saved ✓"
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Response
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* Client: read-only response view */
+                query.adminNotes ? (
+                  <div className="bg-blue-50 border border-blue-100 rounded-md p-4">
+                    <p className="text-sm leading-relaxed text-blue-900 whitespace-pre-wrap">{query.adminNotes}</p>
+                  </div>
                 ) : (
-                  <Button data-testid="button-edit-query" variant="outline" onClick={startEdit}>
-                    Edit Status &amp; Notes
-                  </Button>
-                )}
-              </div>
-            )}
+                  <div className="bg-muted/50 rounded-md p-4 text-center">
+                    <p className="text-sm text-muted-foreground">Our team is reviewing your query. We will respond shortly.</p>
+                  </div>
+                )
+              )}
+            </div>
           </>
         )}
       </div>
