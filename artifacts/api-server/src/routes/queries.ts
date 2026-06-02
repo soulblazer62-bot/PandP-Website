@@ -8,22 +8,9 @@ import {
   UpdateQueryParams,
   DeleteQueryParams,
 } from "@workspace/api-zod";
+import { getOrCreateUser } from "../lib/getOrCreateUser";
 
 const router = Router();
-
-async function getOrCreateUser(clerkId: string, email: string) {
-  let user = await db.query.usersTable.findFirst({
-    where: eq(usersTable.clerkId, clerkId),
-  });
-  if (!user) {
-    const [created] = await db
-      .insert(usersTable)
-      .values({ clerkId, email, role: "client" })
-      .returning();
-    user = created;
-  }
-  return user;
-}
 
 function formatQuery(q: typeof legalQueriesTable.$inferSelect, user?: typeof usersTable.$inferSelect) {
   return {

@@ -8,22 +8,9 @@ import {
   UpdateUserRoleParams,
 } from "@workspace/api-zod";
 import { logger } from "../lib/logger";
+import { getOrCreateUser } from "../lib/getOrCreateUser";
 
 const router = Router();
-
-async function getOrCreateUser(clerkId: string, email: string) {
-  let user = await db.query.usersTable.findFirst({
-    where: eq(usersTable.clerkId, clerkId),
-  });
-  if (!user) {
-    const [created] = await db
-      .insert(usersTable)
-      .values({ clerkId, email, role: "client" })
-      .returning();
-    user = created;
-  }
-  return user;
-}
 
 router.get("/me", async (req, res) => {
   const { userId, sessionClaims } = getAuth(req);
